@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
-// Định nghĩa model cho bảng "books"
+//books
 const Book = sequelize.define("Book", {
   id: {
     type: DataTypes.INTEGER,
@@ -12,15 +12,12 @@ const Book = sequelize.define("Book", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  author: {
+  category: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  genre: {
+  publish_year: {
     type: DataTypes.STRING,
-  },
-  year: {
-    type: DataTypes.INTEGER,
   },
   status: {
     type: DataTypes.STRING,

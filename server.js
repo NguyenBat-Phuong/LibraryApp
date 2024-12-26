@@ -6,7 +6,7 @@ const port = 3000;
 app.use(express.json());
 
 // Routes
-app.use("/users", require("./routes/users"));
+// app.use("/users", require("./routes/users"));
 app.use("/books", require("./routes/books"));
 // app.use("/loans", require("./routes/loans"));
 // app.use("/statistics", require("./routes/statistics"));
