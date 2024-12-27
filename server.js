@@ -1,4 +1,7 @@
-const express = require("express");
+import express from "express";
+import booksRoutes from "./routes/books.js";
+import usersRoutes from "./routes/user.js";
+
 const app = express();
 const port = 3000;
 
@@ -6,10 +9,8 @@ const port = 3000;
 app.use(express.json());
 
 // Routes
-// app.use("/users", require("./routes/users"));
-app.use("/books", require("./routes/books"));
-// app.use("/loans", require("./routes/loans"));
-// app.use("/statistics", require("./routes/statistics"));
+app.use("/books", booksRoutes);
+app.use("/users", usersRoutes);
 
 // Server
 app.listen(port, () => {
