@@ -13,6 +13,10 @@ const bookModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     author: {
       type: DataTypes.STRING,
     },
