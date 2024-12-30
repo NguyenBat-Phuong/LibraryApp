@@ -1,8 +1,8 @@
-import { Sequelize, DataTypes } from "sequelize";
+import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
 
-const userModel = sequelize.define(
-  "userModel",
+const usersModel = sequelize.define(
+  "usersModel",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -27,7 +27,8 @@ const userModel = sequelize.define(
   },
   {
     tableName: "users",
+    timestamps: false,
   }
 );
 
-export default userModel;
+export default usersModel;

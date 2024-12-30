@@ -1,4 +1,4 @@
-import userModel from "../models/userModel.js";
+import userModel from "../models/usersModel.js";
 
 // Lấy tất cả
 export const getAllUsers = async (req, res) => {

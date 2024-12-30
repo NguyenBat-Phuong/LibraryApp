@@ -1,6 +1,7 @@
 import express from "express";
-import booksRoutes from "./routes/books.js";
+import booksRoutes from "./routes/book.js";
 import usersRoutes from "./routes/user.js";
+import loansRoutes from "./routes/loan.js";
 
 const app = express();
 const port = 3000;
@@ -8,7 +9,7 @@ const port = 3000;
 // Middleware
 app.use(express.json());
 
-// Routes
+app.use("/loans", loansRoutes);
 app.use("/books", booksRoutes);
 app.use("/users", usersRoutes);
 

@@ -1,8 +1,8 @@
-import { Sequelize, DataTypes } from "sequelize"; // Sử dụng import thay vì require
-import sequelize from "../config/db.js"; // Sử dụng import cho sequelize
+import { DataTypes } from "sequelize";
+import sequelize from "../config/db.js";
 
-const bookModel = sequelize.define(
-  "bookModel",
+const booksModel = sequelize.define(
+  "booksModel",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -34,4 +34,4 @@ const bookModel = sequelize.define(
   }
 );
 
-export default bookModel;
+export default booksModel;
