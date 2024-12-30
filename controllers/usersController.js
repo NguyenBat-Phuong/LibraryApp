@@ -1,9 +1,9 @@
-import userModel from "../models/usersModel.js";
-
+import { usersModel,loansModel } from "../models/index.js";
+import bcrypt from "bcrypt";
 // Lấy tất cả
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.findAll(); // Lấy người dùng từ database
+    const users = await usersModel.findAll(); // Lấy người dùng từ database
     res.json(users); // Trả về danh sách người dùng dưới dạng JSON
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -13,7 +13,8 @@ export const getAllUsers = async (req, res) => {
 // Thêm
 export const addUser = async (req, res) => {
   const { username, password, email, role } = req.body;
-  if (!username || !email || !password || role) {
+
+  if (!username || !password || !email || !role) {
     return res
       .status(400)
       .json({ message: "Vui lòng cung cấp đầy đủ thông tin người dùng!" });
@@ -21,18 +22,24 @@ export const addUser = async (req, res) => {
 
   const validRoles = ["user", "admin"];
   let finalRole = "user";
+
   if (role && !validRoles.includes(role)) {
     return res.status(400).json({ message: "Invalid user role" });
   }
+
   if (role && validRoles.includes(role)) {
     finalRole = role;
   }
 
   try {
-    const user = await userModel.create({
+    // Mã hóa
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await usersModel.create({
       username,
       email,
-      role: finalRole, //finalRole
+      password: hashedPassword,
+      role: finalRole,
     });
 
     res
@@ -58,16 +65,21 @@ export const updateUser = async (req, res) => {
   const finalRole = validRoles.includes(role) ? role : "user";
 
   try {
-    const user = await userModel.findByPk(id);
+    // Tìm người dùng theo ID
+    const user = await usersModel.findByPk(id);
 
     if (!user) {
       return res.status(404).json({ message: "Người dùng không tồn tại!" });
     }
 
     user.username = username || user.username;
-    user.password = password || user.password;
     user.email = email || user.email;
     user.role = finalRole;
+
+    // ma hoa mk moi
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
 
     await user.save();
 
@@ -88,11 +100,15 @@ export const deleteUser = async (req, res) => {
   }
 
   try {
-    const user = await userModel.findByPk(id);
+    const user = await usersModel.findByPk(id);
 
     if (!user) {
       return res.status(404).json({ message: "Người dùng không tồn tại!" });
     }
+
+    await loansModel.destroy({
+      where: { user_id: id },
+    });
 
     await user.destroy();
 

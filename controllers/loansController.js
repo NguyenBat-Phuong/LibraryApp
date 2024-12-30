@@ -1,10 +1,19 @@
-import loansModel from "../models/loansModel.js";
-import usersModel from "../models/usersModel.js";
-import booksModel from "../models/booksModel.js";
+import { loansModel, usersModel, booksModel } from "../models/index.js";
 
 export const getAllLoans = async (req, res) => {
   try {
-    const loans = await loansModel.findAll();
+    const loans = await loansModel.findAll({
+      include: [
+        {
+          model: usersModel,
+          attributes: ['username'],
+        },
+        {
+          model: booksModel,
+          attributes: ['title'],
+        },
+      ],
+    });
     res.json(loans);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -64,71 +73,77 @@ export const addLoan = async (req, res) => {
   }
 };
 
-// Cập nhật thông tin sách
-export const updateLoan = async (req, res) => {
-  const { title, author, category, publish_year, book_status } = req.body;
-  const { id } = req.params;
-
-  if (!id || isNaN(id) || id <= 0 || !Number.isInteger(Number(id))) {
-    return res
-      .status(400)
-      .json({ message: "ID sách phải là số nguyên dương!" });
-  }
-
-  const validStatus = ["available", "borrowed", "broken"];
-  const finalStatus = validStatus.includes(book_status)
-    ? book_status
-    : "available";
-
-  try {
-    const book = await booksModel.findByPk(id);
-
-    if (!book) {
-      return res.status(404).json({ message: "Sách không tồn tại!" });
-    }
-
-    book.title = title || book.title;
-    book.author = author || book.author;
-    book.category = category || book.category;
-    book.publish_year = publish_year || book.publish_year;
-    book.book_status = finalStatus;
-
-    await book.save();
-
-    res.json({ message: "Cập nhật sách thành công!" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
 // Xóa
 export const deleteLoan = async (req, res) => {
-  const { id } = req.params;
-
-  if (!id || isNaN(id) || id <= 0 || !Number.isInteger(Number(id))) {
-    return res
-      .status(400)
-      .json({ message: "ID sách phải là số nguyên dương!" });
-  }
+  const { username, title } = req.params;
 
   try {
-    const book = await booksModel.findByPk(id);
+    let user = null;
+    let book = null;
 
-    if (!book) {
-      return res.status(404).json({ message: "Sách không tồn tại!" });
+    if (username) {
+      user = await usersModel.findOne({ where: { username } });
+      if (!user) {
+        return res.status(404).json({ message: "Người dùng không tồn tại!" });
+      }
     }
 
-    if (book.book_status !== "available" && book.book_status !== "broken") {
-      return res
-        .status(400)
-        .json({ message: "Không thể xóa sách vì sách đang được mượn!" });
+    if (title) {
+      book = await booksModel.findOne({ where: { title } });
+      if (!book) {
+        return res.status(404).json({ message: "Sách không tồn tại!" });
+      }
     }
 
-    await book.destroy();
+    // Xóa tất cả phiếu mượn của người dùng
+    if (user && !book) {
+      const loans = await loansModel.findAll({ where: { user_id: user.id } });
+      if (loans.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Không có phiếu mượn của người dùng này!" });
+      }
+      await loansModel.destroy({ where: { user_id: user.id } });
+      return res.json({
+        message: `Đã xóa tất cả phiếu mượn của người dùng ${username} thành công!`,
+      });
+    }
 
-    res.json({
-      message: `Đã xóa sách với id ${id} thành công!`,
-    });
+    // Xóa tất cả phiếu mượn của sách
+    if (book && !user) {
+      const loans = await loansModel.findAll({ where: { book_id: book.id } });
+      if (loans.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Không có phiếu mượn cho sách này!" });
+      }
+      await loansModel.destroy({ where: { book_id: book.id } });
+      return res.json({
+        message: `Đã xóa tất cả phiếu mượn của sách ${title} thành công!`,
+      });
+    }
+
+    // Xoas username và title
+    if (user && book) {
+      const loan = await loansModel.findOne({
+        where: { user_id: user.id, book_id: book.id },
+      });
+
+      if (!loan) {
+        return res.status(404).json({
+          message: "Không tìm thấy phiếu mượn của người dùng và sách này!",
+        });
+      }
+      await loan.destroy();
+      return res.json({
+        message: `Đã xóa phiếu mượn của người dùng ${username} cho sách ${title} thành công!`,
+      });
+    }
+
+    // Nếu không có username hoặc title, trả về lỗi
+    return res
+      .status(400)
+      .json({ message: "Cần cung cấp username hoặc title!" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

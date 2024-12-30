@@ -1,5 +1,5 @@
-import { DataTypes } from "sequelize"; // Sử dụng import thay vì require
 import sequelize from "../config/db.js";
+import { DataTypes } from "sequelize";
 
 const loansModel = sequelize.define(
   "loansModel",
@@ -10,23 +10,10 @@ const loansModel = sequelize.define(
       autoIncrement: true,
     },
     user_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      references: {
-        model: "users",
-        key: "id",
-      },
+      type: DataTypes.INTEGER,
     },
     book_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      references: {
-        model: "books",
-        key: "id",
-      },
-    },
-    borrow_date: {
-      type: DataTypes.DATE,
+      type: DataTypes.INTEGER,
     },
     return_date: {
       type: DataTypes.DATE,

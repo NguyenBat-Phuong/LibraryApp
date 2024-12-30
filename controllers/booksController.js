@@ -1,4 +1,4 @@
-import booksModel from "../models/booksModel.js";
+import { booksModel } from "../models/index.js";
 
 // Lấy tất cả sách
 export const getAllBooks = async (req, res) => {
@@ -104,10 +104,14 @@ export const deleteBook = async (req, res) => {
         .json({ message: "Không thể xóa sách vì sách đang được mượn!" });
     }
 
+    await loansModel.destroy({
+      where: { book_id: id },
+    });
+
     await book.destroy();
 
     res.json({
-      message: `Đã xóa sách với id ${id} thành công!`,
+      message: `Đã xóa sách với id ${id} thành công và xoa các phieu muon tra!`,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
