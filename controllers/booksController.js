@@ -1,4 +1,5 @@
-import { booksModel } from "../models/index.js";
+import { booksModel, statisticsModel, loansModel } from "../models/index.js";
+import sequelize from "../config/db.js";
 
 // Lấy tất cả sách
 export const getAllBooks = async (req, res) => {
@@ -13,6 +14,7 @@ export const getAllBooks = async (req, res) => {
 // Thêm sách
 export const addBook = async (req, res) => {
   const { title, author, category, publish_year, book_status } = req.body;
+
   if (!title || !author || !category || !publish_year) {
     return res
       .status(400)
@@ -21,26 +23,45 @@ export const addBook = async (req, res) => {
 
   const validStatuses = ["available", "borrowed", "broken"];
   let finalStatus = "available";
+
   if (book_status && !validStatuses.includes(book_status)) {
-    return res.status(400).json({ message: "Invalid book status" });
+    return res.status(400).json({ message: "Trạng thái sách không hợp lệ!" });
   }
 
   if (book_status && validStatuses.includes(book_status)) {
     finalStatus = book_status;
   }
 
+  const transaction = await sequelize.transaction();
   try {
-    const book = await booksModel.create({
-      title,
-      author,
-      category,
-      publish_year,
-      book_status: finalStatus, // finalStatus
-    });
+    // Thêm bản ghi vào bảng books
+    const book = await booksModel.create(
+      {
+        title,
+        author,
+        category,
+        publish_year,
+        book_status: finalStatus,
+      },
+      { transaction }
+    );
 
-    res.status(201).json({ id: book.id, message: "Thêm sách thành công!" });
+    // Thêm bản ghi vào bảng statistics
+    await statisticsModel.create(
+      {
+        book_id: book.id,
+        borrow_count: 0,
+      },
+      { transaction }
+    );
+    await transaction.commit();
+
+    res
+      .status(201)
+      .json({ id: book.id, message: "Thêm sách và thống kê thành công!" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    await transaction.rollback();
+    res.status(500).json({ error: "Lỗi hệ thống: " + err.message });
   }
 };
 
@@ -103,6 +124,10 @@ export const deleteBook = async (req, res) => {
         .status(400)
         .json({ message: "Không thể xóa sách vì sách đang được mượn!" });
     }
+
+    await statisticsModel.destroy({
+      where: { book_id: id },
+    });
 
     await loansModel.destroy({
       where: { book_id: id },

@@ -2,6 +2,7 @@ import express from "express";
 import booksRoutes from "./routes/book.js";
 import usersRoutes from "./routes/user.js";
 import loansRoutes from "./routes/loan.js";
+import statisticsRoutes from "./routes/statistic.js";
 
 const app = express();
 const port = 3000;
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use("/loans", loansRoutes);
 app.use("/books", booksRoutes);
 app.use("/users", usersRoutes);
+app.use("/statistics", statisticsRoutes);
 
 // Server
 app.listen(port, () => {

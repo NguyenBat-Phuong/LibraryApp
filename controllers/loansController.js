@@ -47,7 +47,6 @@ export const addLoan = async (req, res) => {
   const return_date = borrowDate.toISOString();
 
   try {
-    // Tạo phiếu mượn
     const loan = await loansModel.create({
       user_id,
       book_id,
