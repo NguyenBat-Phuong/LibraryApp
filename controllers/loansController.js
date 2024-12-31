@@ -6,15 +6,15 @@ export const getAllLoans = async (req, res) => {
       include: [
         {
           model: usersModel,
-          attributes: ['username'],
+          attributes: ["username"],
         },
         {
           model: booksModel,
-          attributes: ['title'],
+          attributes: ["title"],
         },
       ],
     });
-    res.json(loans);
+    return res.json(loans);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -42,7 +42,7 @@ export const addLoan = async (req, res) => {
   }
 
   // Tính toán ngày trả
-  const borrowDate = new Date(); // Ngày mượn mặc định là ngày hiện tại
+  const borrowDate = new Date();
   borrowDate.setDate(borrowDate.getDate() + 14);
   const return_date = borrowDate.toISOString();
 
@@ -52,7 +52,6 @@ export const addLoan = async (req, res) => {
       book_id,
       return_date,
     });
-
     const user = await usersModel.findByPk(user_id); // Tìm người mượn theo ID
     const book = await booksModel.findByPk(book_id); // Tìm sách mượn theo ID
 
@@ -61,14 +60,13 @@ export const addLoan = async (req, res) => {
         message: "Người mượn hoặc sách không tồn tại!",
       });
     }
-
-    res.status(201).json({
+    return res.status(201).json({
       username: user.username,
       title: book.title,
       message: "Thêm vào thành công!",
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 

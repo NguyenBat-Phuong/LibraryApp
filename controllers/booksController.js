@@ -5,7 +5,7 @@ import sequelize from "../config/db.js";
 export const getAllBooks = async (req, res) => {
   try {
     const books = await booksModel.findAll();
-    res.json(books);
+    return res.json(books);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
