@@ -1,15 +1,22 @@
-import { usersModel } from "../models/index.js";
+import { userPermissionsModel } from "../models/index.js";
 
-export const checkAdminRole = async (userId) => {
-  const user = await usersModel.findByPk(userId);
-  
-  if (!user) {
-    throw new Error("Người dùng không tồn tại");
-  }
-
-  if (user.role !== 'admin') {
-    throw new Error("Bạn không có quyền truy cập");
-  }
-
-  return true;
+export const checkPermissions = (permission) => {
+  return async (req, res, next) => {
+    const userId = req.user.id;
+    try {
+      const userPermissions = await userPermissionsModel.findOne({
+        where: { user_id: userId },
+      });
+      if (req.user.role === "admin") {
+        return next();
+      }
+      if (!userPermissions || !userPermissions[permission]) {
+        return res.status(403).json({ Error: "Bạn không có quyền truy cập" });
+      }
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ Error: error.message || "Lỗi hệ thống" });
+    }
+  };
 };

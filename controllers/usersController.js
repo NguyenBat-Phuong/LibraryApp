@@ -13,24 +13,19 @@ export const getAllUsers = async (req, res) => {
 // Thêm
 export const addUser = async (req, res) => {
   const { username, password, email, role } = req.body;
-
   if (!username || !password || !email || !role) {
     return res
       .status(400)
       .json({ message: "Vui lòng cung cấp đầy đủ thông tin người dùng!" });
   }
-
   const validRoles = ["user", "admin"];
   let finalRole = "user";
-
   if (role && !validRoles.includes(role)) {
     return res.status(400).json({ message: "Invalid user role" });
   }
-
   if (role && validRoles.includes(role)) {
     finalRole = role;
   }
-
   try {
     // Mã hóa
     const hashedPassword = await bcrypt.hash(password, 10);

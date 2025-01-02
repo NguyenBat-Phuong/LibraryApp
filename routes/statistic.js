@@ -7,7 +7,5 @@ import {
 const router = express.Router();
 
 router.get("/", countBooksBorrowed);
-// router.put("/id/:statistic_id", updateBooksBorrowed);
-// router.put("/title/:title", updateBooksBorrowed);
 
 export default router;
